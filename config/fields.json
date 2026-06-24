@@ -1,0 +1,10 @@
+{
+  "fields": [
+    { "key": "date", "label": "Date", "type": "date" },
+    { "key": "health", "label": "Health" },
+    { "key": "study", "label": "Study" },
+    { "key": "workout", "label": "Workout" },
+    { "key": "diet", "label": "Diet" },
+    { "key": "measurements", "label": "Measurements" }
+  ]
+}

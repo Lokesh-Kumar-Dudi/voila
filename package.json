@@ -1,0 +1,19 @@
+{
+  "name": "voila",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Voilà — daily routine notes as pastel cards; local JSON, committed to the repo, deployed on GitHub Pages.",
+  "bin": {
+    "vla": "cli/vla.js"
+  },
+  "scripts": {
+    "add": "node cli/vla.js add",
+    "serve": "node cli/vla.js serve --port 3611",
+    "export": "node cli/vla.js export",
+    "fields": "node cli/vla.js fields"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "commander": "^15.0.0"
+  }
+}

@@ -1,0 +1,6 @@
+# Generated Instagram card exports
+export/
+
+# OS / editor junk
+.DS_Store
+node_modules/

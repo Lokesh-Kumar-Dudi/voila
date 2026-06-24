@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voilà</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@700&family=Gochi+Hand&family=Indie+Flower&family=Pacifico&family=Patrick+Hand&family=Permanent+Marker&family=Shadows+Into+Light&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>Voilà</h1>
+    <p class="subtitle">Daily routine, one note per day</p>
+  </header>
+
+  <main>
+    <div id="status" class="status">Loading notes…</div>
+    <section id="board" class="board" aria-live="polite"></section>
+  </main>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Instagram post preview">
+    <button class="modal-close" id="modalClose" aria-label="Close">×</button>
+    <div class="stage">
+      <button class="nav prev" id="navPrev" aria-label="Previous card">‹</button>
+      <div class="post-card" id="postCard"></div>
+      <button class="nav next" id="navNext" aria-label="Next card">›</button>
+    </div>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <p class="hint">Use the arrows, then screenshot each card to post on Instagram.</p>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
