@@ -8,7 +8,7 @@
   },
   "scripts": {
     "add": "node cli/vla.js add",
-    "serve": "node cli/vla.js serve --port 3611",
+    "serve": "node cli/vla.js serve",
     "export": "node cli/vla.js export",
     "fields": "node cli/vla.js fields"
   },

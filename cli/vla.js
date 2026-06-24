@@ -44,7 +44,7 @@ program
 program
   .command("serve")
   .description("Preview the site on a local static server")
-  .option("-p, --port <number>", "port to listen on")
+  .option("-p, --port <number>", "port to listen on (default 3611)")
   .action((opts) => serve({ port: opts.port }));
 
 program

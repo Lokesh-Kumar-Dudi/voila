@@ -22,8 +22,12 @@ const MIME = {
   ".ico": "image/x-icon",
 };
 
+const DEFAULT_PORT = 3611;
+
 function serve({ port } = {}) {
-  const listenPort = Number(port) || Number(process.env.PORT) || 8000;
+  const requested = Number(port) || Number(process.env.PORT) || DEFAULT_PORT;
+  // Only auto-advance to a free port when the port wasn't explicitly chosen.
+  const explicit = port != null || process.env.PORT != null;
 
   const server = http.createServer((req, res) => {
     const urlPath = decodeURIComponent(req.url.split("?")[0]);
@@ -47,9 +51,29 @@ function serve({ port } = {}) {
     });
   });
 
-  server.listen(listenPort, () => {
-    console.log(`Serving ${ROOT}\n  http://localhost:${listenPort}`);
+  const MAX_TRIES = 20;
+  let current = requested;
+
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      if (!explicit && current - requested < MAX_TRIES) {
+        console.log(`Port ${current} in use, trying ${current + 1}…`);
+        current++;
+        server.listen(current);
+        return;
+      }
+      console.error(`Port ${current} is already in use. Pick another: vla serve --port <n>`);
+      process.exit(1);
+    }
+    console.error(err.message);
+    process.exit(1);
   });
+
+  server.on("listening", () => {
+    console.log(`Serving ${ROOT}\n  http://localhost:${server.address().port}`);
+  });
+
+  server.listen(current);
   return server;
 }
 
