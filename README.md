@@ -20,6 +20,7 @@ cli/lib/              # shared CLI internals:
   palette.js          #   tones, fonts, colors + tone picker
   card-svg.js         #   renders one card to an SVG string
   png.js              #   SVG -> PNG converter resolution
+  reel.js             #   stitches PNGs into a 1080x1920 MP4 reel
 index.html / styles.css   # the page
 js/                   # ES modules:
   main.js             #   entry point — loads data, renders the board
@@ -113,18 +114,30 @@ npm run export                  # today's entries -> export/<date>/NN-field.svg
 vla export --all             # every entry
 vla export --date 2026-06-24 # a specific day
 vla export --out shots --no-png
+vla export --reel            # also stitch each entry's cards into reel.mp4
+vla export --reel --reel-seconds 3   # 3s per card
 ```
 
-Each card is written as a self-contained 1080×1080 SVG **and** a matching PNG.
-PNGs are rendered in-process by [`@resvg/resvg-js`] (bundled — no system tools
-needed), with command-line converters (`rsvg-convert`, ImageMagick, Inkscape)
-used as a fallback. Pass `--no-png` to skip rasterizing.
+Each card is rendered to a 1080×1080 PNG via an intermediate SVG; the SVG is
+deleted once its PNG is written, so a normal export leaves just PNGs. PNGs are
+rendered in-process by [`@resvg/resvg-js`] (bundled — no system tools needed),
+with command-line converters (`rsvg-convert`, ImageMagick, Inkscape) as a
+fallback. Pass `--no-png` to keep the SVGs instead (e.g. to get the playful
+fonts, which PNGs fall back from).
+
+With `--reel`, each entry's cards are also stitched into a vertical 1080×1920
+`reel.mp4` (H.264) you can post straight to Instagram Reels — rendered with
+ffmpeg, bundled via [`ffmpeg-static`] (system `ffmpeg` used as a fallback). Each
+card shows for `--reel-seconds` (default 2.5).
 
 The `export/` folder is git-ignored.
 
+[`ffmpeg-static`]: https://github.com/eugeneware/ffmpeg-static
+
 > Note: the PNG renderer uses system fonts, so the playful Google fonts only
-> appear when you open the **SVG** in a browser; PNGs fall back to a clean
-> sans-serif. Everything else (tones, shapes, highlighted numbers) is identical.
+> appear in the SVG (export with `--no-png` and open it in a browser); PNGs fall
+> back to a clean sans-serif. Everything else (tones, shapes, highlighted
+> numbers) is identical.
 
 [`@resvg/resvg-js`]: https://github.com/yisibl/resvg-js
 

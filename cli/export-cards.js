@@ -24,6 +24,7 @@ const {
 const { TONES, PLAYFUL_FONTS, assignTones } = require("./lib/palette.js");
 const { makeShapeSpec, cardSVG } = require("./lib/card-svg.js");
 const { getConverter } = require("./lib/png.js");
+const { buildReel } = require("./lib/reel.js");
 
 function buildSlides(entry, fields, dateKey) {
   const dateValue = dateKey ? String(entry[dateKey] || "") : "";
@@ -52,9 +53,12 @@ function buildSlides(entry, fields, dateKey) {
   return list;
 }
 
-/* opts: { date: string|null (null = all entries), out: string, png: boolean } */
+/* opts: { date, out, png, reel, reelSeconds }
+ *   date: string|null (null = all entries); reel: stitch cards into an MP4. */
 function exportCards(opts = {}) {
-  const { date = null, out = "export", png = true } = opts;
+  const { date = null, out = "export", png = true, reel = false, reelSeconds = 2.5 } = opts;
+  // A reel is built from the PNG cards, so it requires PNG generation.
+  const wantPng = png || reel;
   const config = readJSON(FIELDS_PATH);
   const fields = Array.isArray(config.fields) ? config.fields : [];
   const entries = readJSON(ENTRIES_PATH, []);
@@ -76,11 +80,12 @@ function exportCards(opts = {}) {
     process.exit(1);
   }
 
-  const converter = png ? getConverter() : null;
+  const converter = wantPng ? getConverter() : null;
   const outRoot = path.join(ROOT, out);
   const usedFolders = new Set();
-  let svgCount = 0;
+  let svgKeptCount = 0;
   let pngCount = 0;
+  let reelCount = 0;
 
   selected.forEach((entry, entryIdx) => {
     const slides = buildSlides(entry, fields, dateKey);
@@ -96,36 +101,64 @@ function exportCards(opts = {}) {
     const dir = path.join(outRoot, folderName);
     fs.mkdirSync(dir, { recursive: true });
 
+    const entryPngs = [];
     slides.forEach((slide, i) => {
       const tone = TONES[tones[i]];
       const base = `${String(i + 1).padStart(2, "0")}-${safeName(slide.key)}`;
       const svgPath = path.join(dir, base + ".svg");
       const svg = cardSVG(slide, tone, slide.font);
       fs.writeFileSync(svgPath, svg);
-      svgCount++;
 
+      let pngOk = false;
       if (converter) {
         const pngPath = path.join(dir, base + ".png");
         try {
           converter.render(svg, svgPath, pngPath);
+          entryPngs.push(pngPath);
           pngCount++;
+          pngOk = true;
         } catch (err) {
           console.error(`  PNG failed for ${base}: ${err.message}`);
         }
       }
+
+      // The SVG is only an intermediate step — drop it once the PNG exists,
+      // but keep it as the sole output when no PNG was produced.
+      if (pngOk) fs.unlinkSync(svgPath);
+      else svgKeptCount++;
     });
 
-    console.log(`${folderName}: ${slides.length} cards`);
+    let reelNote = "";
+    if (reel && entryPngs.length) {
+      const reelPath = path.join(dir, "reel.mp4");
+      if (buildReel(entryPngs, reelPath, { seconds: reelSeconds })) {
+        reelCount++;
+        reelNote = " + reel.mp4";
+      } else {
+        reelNote = " (reel skipped — ffmpeg unavailable)";
+      }
+    }
+
+    console.log(`${folderName}: ${slides.length} cards${reelNote}`);
   });
 
-  console.log(`\nWrote ${svgCount} SVG${svgCount === 1 ? "" : "s"} to ${path.relative(ROOT, outRoot)}/`);
-  if (converter) {
-    console.log(`Rasterized ${pngCount} PNG${pngCount === 1 ? "" : "s"} with ${converter.name}.`);
-  } else if (png) {
-    console.log(
-      "No SVG->PNG converter available. Run `npm install` to get @resvg/resvg-js,\n" +
-        "or open an SVG in a browser and export it."
-    );
+  const rel = path.relative(ROOT, outRoot);
+  if (pngCount) {
+    console.log(`\nWrote ${pngCount} PNG${pngCount === 1 ? "" : "s"} to ${rel}/ with ${converter.name}.`);
+  }
+  if (svgKeptCount) {
+    if (!pngCount) console.log("");
+    if (wantPng && !converter) {
+      console.log(
+        `Kept ${svgKeptCount} SVG${svgKeptCount === 1 ? "" : "s"} in ${rel}/ — no SVG->PNG ` +
+          "converter available.\nRun `npm install` for @resvg/resvg-js, or open an SVG in a browser."
+      );
+    } else {
+      console.log(`Wrote ${svgKeptCount} SVG${svgKeptCount === 1 ? "" : "s"} to ${rel}/.`);
+    }
+  }
+  if (reel) {
+    console.log(`Stitched ${reelCount} reel${reelCount === 1 ? "" : "s"} (1080x1920 MP4).`);
   }
 }
 

@@ -54,9 +54,17 @@ program
   .option("--date <date>", "export a specific YYYY-MM-DD", today())
   .option("--out <dir>", "output directory", "export")
   .option("--no-png", "skip PNG rasterization")
+  .option("--reel", "also stitch each entry's cards into a 1080x1920 MP4 reel")
+  .option("--reel-seconds <n>", "seconds each card shows in the reel", parseFloat, 2.5)
   .action((opts) => {
     const date = opts.all ? null : opts.date;
-    exportCards({ date, out: opts.out, png: opts.png });
+    exportCards({
+      date,
+      out: opts.out,
+      png: opts.png,
+      reel: opts.reel,
+      reelSeconds: opts.reelSeconds,
+    });
   });
 
 const fieldsCmd = program
