@@ -14,5 +14,13 @@
     "workout": "Bicep curls and triceps",
     "diet": "chick peas + soyabean mashed with curd, 2 eggs and a chapati, 3 cups of tea",
     "measurements": "weight 79kg"
+  },
+  {
+    "date": "2026-06-26",
+    "health": "had rhinitis in the morning and got worse during the day, low energy",
+    "study": "TryHackMe windows rooms",
+    "workout": "skipped due to low energy",
+    "diet": "rice with chick peas and soyabean, 1.5 chapati and 2 eggs, 3 times tea",
+    "measurements": "weight 78.85kg evening"
   }
 ]
